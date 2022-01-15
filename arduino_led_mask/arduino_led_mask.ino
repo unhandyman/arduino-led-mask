@@ -1,11 +1,17 @@
 #include <FastLED.h>
 
-#define LED_PIN A5
-#define NUM_LEDS 161
-#define NUM_ROWS 7
-#define NUM_FIRST_ROW 26
+// init LEDs
+#define LED_PIN 8
+#define NUM_LEDS 84
 #define LED_TYPE WS2812B
 #define BRIGHTNESS 20
+
+// init SOUND
+#define SOUND_PIN 2
+bool SoundInput;
+unsigned long LEDon;
+unsigned long LEDdelay;
+unsigned long LEDoff;
 
 CRGB leds[NUM_LEDS];
 
@@ -14,63 +20,39 @@ void setup()
   FastLED.addLeds<LED_TYPE, LED_PIN>(leds, NUM_LEDS);
   FastLED.setMaxPowerInVoltsAndMilliamps(4.5, 500);
   FastLED.show();
+
+// baud rate
+  Serial.begin(9600);
 }
 
-// Examples of designs you can loop through
+// one static mask design
 void loop()
 {
   uint_least8_t circlePattern[NUM_LEDS] = {
-    0, 1, 2, 3, 4, 0, 1, 2, 3, 4, 0, 1, 1, 1, 1, 0, 4, 3, 2, 1, 0, 4, 3, 2, 1, 0,
-      1, 2, 3, 4, 0, 1, 2, 3, 4, 0, 1, 2, 2, 2, 1, 0, 4, 3, 2, 1, 0, 4, 3, 2, 1,
-      2, 3, 4, 0, 1, 2, 3, 4, 0, 1, 2, 3, 3, 2, 1, 0, 4, 3, 2, 1, 0, 4, 3, 2,
-        3, 4, 0, 1, 2, 3, 4, 0, 1, 2, 3, 4, 3, 2, 1, 0, 4, 3, 2, 1, 0, 4, 3,
-        3, 4, 0, 1, 2, 3, 4, 0, 1, 2, 3, 3, 2, 1, 0, 4, 3, 2, 1, 0, 4, 3,
-          3, 4, 0, 1, 2, 3, 4, 0, 1, 2, 2, 2, 1, 0, 4, 3, 2, 1, 0, 4, 3,
-          3, 4, 0, 1, 2, 3, 4, 0, 1, 1, 1, 1, 0, 4, 3, 2, 1, 0, 4, 3
-  };
-  uint_least8_t linePattern[NUM_LEDS] = {
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-      2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
-       3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-        4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4,
-         5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
-          6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6
+     3, 4, 0, 1, 1, 1, 1, 0, 4, 3,
+    3, 4, 0, 1, 2, 2, 2, 1, 0, 4, 3,
+     4, 0, 1, 2, 3, 3, 2, 1, 0, 4,
+    4, 0, 1, 2, 3, 4, 3, 2, 1, 0, 4,
+     4, 0, 1, 2, 3, 3, 2, 1, 0, 4,
+    3, 4, 0, 1, 2, 2, 2, 1, 0, 4, 3,
+     3, 4, 0, 1, 1, 1, 1, 0, 4, 3,
+    2, 3, 4, 0, 0, 0, 0, 0, 4, 3, 2
   };
 
-  uint_least8_t verticalLinePattern[NUM_LEDS] = {
-    0, 1, 2, 3, 4, 0, 1, 2, 3, 4, 0, 1, 2, 2, 1, 0, 4, 3, 2, 1, 0, 4, 3, 2, 1, 0,
-     0, 1, 2, 3, 4, 0, 1, 2, 3, 4, 0, 1, 2, 1, 0, 4, 3, 2, 1, 0, 4, 3, 2, 1, 0,
-      0, 1, 2, 3, 4, 0, 1, 2, 3, 4, 0, 1, 1, 0, 4, 3, 2, 1, 0, 4, 3, 2, 1, 0,
-       0, 1, 2, 3, 4, 0, 1, 2, 3, 4, 0, 1, 0, 4, 3, 2, 1, 0, 4, 3, 2, 1, 0,
-        0, 1, 2, 3, 4, 0, 1, 2, 3, 4, 0, 0, 4, 3, 2, 1, 0, 4, 3, 2, 1, 0,
-         0, 1, 2, 3, 4, 0, 1, 2, 3, 4, 0, 4, 3, 2, 1, 0, 4, 3, 2, 1, 0,
-          0, 1, 2, 3, 4, 0, 1, 2, 3, 4, 4, 3, 2, 1, 0, 4, 3, 2, 1, 0
-  };
+uint_least8_t circleColors[5]= { 0, 0, 0, 8, 8 }; // green and yellow
 
-  uint_least8_t lineColors[5] = { 4, 4, 5, 5, 5 };
-  uint_least8_t line2Colors[6] = { 6, 6, 5, 5, 8, 8 };
-  uint_least8_t verticalColors[5] = { 9, 9, 10, 10, 10 };
-  uint_least8_t vertical2Colors[20] = { 5, 5, 5, 5, 5, 4, 4, 4, 4, 4, 7, 7, 7, 7, 7, 2, 2, 2, 2, 2 };
-  uint_least8_t circleColors[5]= { 0, 0, 0, 1, 1};
-  uint_least8_t circleColors2[5] = { 2, 2, 2, 3, 3 };
+	// set LEDs depending on input from sound sensor
+	SoundInput = digitalRead(SOUND_PIN);
+	if (SoundInput == true){
+		pattern(circlePattern, circleColors, false, 3, 5);
+	}else{
+		FastLED.clear();
+		for (uint_least8_t i = 0; i < NUM_LEDS; i++) {
+			leds[i] = CRGB::Black;
+		}
+	FastLED.show();
+	}
 
-  pattern(circlePattern, circleColors, false, 1, 5);
-  pattern(circlePattern, circleColors, false, 1, 5);
-
-  pattern(circlePattern, circleColors2, true, 1, 5);
-  pattern(circlePattern, circleColors2, true, 1, 5);
-
-  pattern(linePattern, lineColors, false, 1, 5);
-  pattern(linePattern, lineColors, false, 1, 5);
-
-  // pattern(line2Pattern, line2Colors, false, 3, 6);
-  // pattern(line2Pattern, line2Colors, false, 3, 6);
-
-  pattern(verticalLinePattern, verticalColors, false, 1.5, 5);
-  pattern(verticalLinePattern, verticalColors, false, 1.5, 5);
-
-  pattern(linePattern, vertical2Colors, false, 1.5, 20);
 }
 
 void pattern(uint_least8_t pattern[NUM_LEDS], uint_least8_t rgbColors[5], bool reverse, float speed, uint_least8_t max) {
@@ -106,7 +88,6 @@ void pattern(uint_least8_t pattern[NUM_LEDS], uint_least8_t rgbColors[5], bool r
         );
       }
       FastLED.show();
-      FastLED.delay(1);
     }
   }
 }
